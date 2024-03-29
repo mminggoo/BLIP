@@ -33,8 +33,8 @@ def create_dataset(dataset, config, min_scale=0.5):
         dataset = pretrain_dataset(config['train_file'], config['laion_path'], transform_train)              
         return dataset  
     
-    elif dataset=='caption_coco':   
-        train_dataset = coco_karpathy_train(transform_train, config['image_root'], config['ann_root'], prompt=config['prompt'])
+    elif dataset=='caption_coco':
+        train_dataset = coco_karpathy_train(transform_train, config['train_image_root'], config['df_root'], prompt=config['prompt'])
         val_dataset = coco_karpathy_caption_eval(transform_test, config['image_root'], config['ann_root'], 'val')
         test_dataset = coco_karpathy_caption_eval(transform_test, config['image_root'], config['ann_root'], 'test')   
         return train_dataset, val_dataset, test_dataset
