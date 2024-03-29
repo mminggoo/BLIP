@@ -1,3 +1,5 @@
+train_image_root: '../'
+df_root: '../data.csv'
 image_root: '/export/share/datasets/vision/coco/images/'
 ann_root: 'annotation'
 coco_gt_root: 'annotation/coco_gt'
