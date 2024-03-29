@@ -1,5 +1,6 @@
 import os
 import json
+import pandas as pd
 
 from torch.utils.data import Dataset
 from torchvision.datasets.utils import download_url
@@ -10,43 +11,28 @@ from data.utils import pre_caption
 
 class coco_karpathy_train(Dataset):
     def __init__(self, transform, image_root, ann_root, max_words=30, prompt=''):        
-        '''
-        image_root (string): Root directory of images (e.g. coco/images/)
-        ann_root (string): directory to store the annotation file
-        '''        
-        url = 'https://storage.googleapis.com/sfr-vision-language-research/datasets/coco_karpathy_train.json'
-        filename = 'coco_karpathy_train.json'
-
-        download_url(url,ann_root)
         
-        self.annotation = json.load(open(os.path.join(ann_root,filename),'r'))
         self.transform = transform
+        self.df = pd.read_csv(ann_root)
         self.image_root = image_root
-        self.max_words = max_words      
+        self.max_words = max_words
         self.prompt = prompt
         
-        self.img_ids = {}  
-        n = 0
-        for ann in self.annotation:
-            img_id = ann['image_id']
-            if img_id not in self.img_ids.keys():
-                self.img_ids[img_id] = n
-                n += 1    
         
     def __len__(self):
-        return len(self.annotation)
+        return len(self.df)
     
     def __getitem__(self, index):    
         
-        ann = self.annotation[index]
+        ann = self.df.iloc[index]
         
-        image_path = os.path.join(self.image_root,ann['image'])        
+        image_path = os.path.join(self.image_root, ann['image_file'])        
         image = Image.open(image_path).convert('RGB')   
         image = self.transform(image)
         
-        caption = self.prompt+pre_caption(ann['caption'], self.max_words) 
+        caption = self.prompt+pre_caption(ann['text'], self.max_words) 
 
-        return image, caption, self.img_ids[ann['image_id']] 
+        return image, caption, index
     
     
 class coco_karpathy_caption_eval(Dataset):
