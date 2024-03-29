@@ -26,7 +26,7 @@ from models.blip import blip_decoder
 import utils
 from utils import cosine_lr_schedule
 from data import create_dataset, create_sampler, create_loader
-from data.utils import save_result, coco_caption_eval
+from data.utils import save_result, coco_caption_eval, coyo_caption_eval
 
 def train(model, data_loader, optimizer, epoch, device):
     # train
@@ -80,7 +80,7 @@ def evaluate(model, data_loader, device, config):
 
 
 def main(args, config):
-    utils.init_distributed_mode(args)    
+    utils.init_distributed_mode(args)
     
     device = torch.device(args.device)
 
@@ -97,7 +97,7 @@ def main(args, config):
 
     if args.distributed:
         num_tasks = utils.get_world_size()
-        global_rank = utils.get_rank()            
+        global_rank = utils.get_rank()
         samplers = create_sampler([train_dataset,val_dataset,test_dataset], [True,False,False], num_tasks, global_rank)         
     else:
         samplers = [None, None, None]
@@ -142,8 +142,8 @@ def main(args, config):
         test_result_file = save_result(test_result, args.result_dir, 'test_epoch%d'%epoch, remove_duplicate='image_id')  
 
         if utils.is_main_process():   
-            coco_val = coco_caption_eval(config['coco_gt_root'],val_result_file,'val')
-            coco_test = coco_caption_eval(config['coco_gt_root'],test_result_file,'test')
+            coco_val = coyo_caption_eval('annotation/coyo_val.json',val_result_file,'val')
+            coco_test = coyo_caption_eval('annotation/coyo_val.json',test_result_file,'test')
             
             if args.evaluate:            
                 log_stats = {**{f'val_{k}': v for k, v in coco_val.eval.items()},
@@ -170,12 +170,43 @@ def main(args, config):
                              'epoch': epoch,
                              'best_epoch': best_epoch,
                             }
-                with open(os.path.join(args.output_dir, "log.txt"),"a") as f:
+                with open(os.path.join(args.output_dir, "coyo_log.txt"),"a") as f:
                     f.write(json.dumps(log_stats) + "\n")     
+
+            coco_val = coco_caption_eval(config['coco_gt_root'],val_result_file,'val')
+            coco_test = coco_caption_eval(config['coco_gt_root'],test_result_file,'test')
+
+            if args.evaluate:            
+                log_stats = {**{f'val_{k}': v for k, v in coco_val.eval.items()},
+                             **{f'test_{k}': v for k, v in coco_test.eval.items()},                       
+                            }
+                with open(os.path.join(args.output_dir, "evaluate.txt"),"a") as f:
+                    f.write(json.dumps(log_stats) + "\n")                   
+            else:             
+                save_obj = {
+                    'model': model_without_ddp.state_dict(),
+                    'optimizer': optimizer.state_dict(),
+                    'config': config,
+                    'epoch': epoch,
+                }
+
+                if coco_val.eval['CIDEr'] + coco_val.eval['Bleu_4'] > best:
+                    best = coco_val.eval['CIDEr'] + coco_val.eval['Bleu_4']
+                    best_epoch = epoch                
+                    torch.save(save_obj, os.path.join(args.output_dir, 'checkpoint_best.pth')) 
+                    
+                log_stats = {**{f'train_{k}': v for k, v in train_stats.items()},
+                             **{f'val_{k}': v for k, v in coco_val.eval.items()},
+                             **{f'test_{k}': v for k, v in coco_test.eval.items()},                       
+                             'epoch': epoch,
+                             'best_epoch': best_epoch,
+                            }
+                with open(os.path.join(args.output_dir, "coco_log.txt"),"a") as f:
+                    f.write(json.dumps(log_stats) + "\n")    
                     
         if args.evaluate: 
             break
-        dist.barrier()     
+        # dist.barrier()     
 
     total_time = time.time() - start_time
     total_time_str = str(datetime.timedelta(seconds=int(total_time)))
