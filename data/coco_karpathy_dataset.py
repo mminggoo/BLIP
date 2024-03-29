@@ -36,36 +36,24 @@ class coco_karpathy_train(Dataset):
     
     
 class coco_karpathy_caption_eval(Dataset):
-    def __init__(self, transform, image_root, ann_root, split):  
-        '''
-        image_root (string): Root directory of images (e.g. coco/images/)
-        ann_root (string): directory to store the annotation file
-        split (string): val or test
-        '''
-        urls = {'val':'https://storage.googleapis.com/sfr-vision-language-research/datasets/coco_karpathy_val.json',
-                'test':'https://storage.googleapis.com/sfr-vision-language-research/datasets/coco_karpathy_test.json'}
-        filenames = {'val':'coco_karpathy_val.json','test':'coco_karpathy_test.json'}
+    def __init__(self, transform, image_root, df_root, split):
         
-        download_url(urls[split],ann_root)
-        
-        self.annotation = json.load(open(os.path.join(ann_root,filenames[split]),'r'))
+        self.df = pd.read_csv(df_root)
         self.transform = transform
         self.image_root = image_root
         
     def __len__(self):
-        return len(self.annotation)
+        return len(self.df)
     
     def __getitem__(self, index):    
         
-        ann = self.annotation[index]
+        ann = self.df.iloc[index]
         
-        image_path = os.path.join(self.image_root,ann['image'])        
-        image = Image.open(image_path).convert('RGB')   
+        image_path = os.path.join(self.image_root, ann['image_file'])         
+        image = Image.open(image_path).convert('RGB')
         image = self.transform(image)          
         
-        img_id = ann['image'].split('/')[-1].strip('.jpg').split('_')[-1]
-        
-        return image, int(img_id)   
+        return image, index  
     
     
 class coco_karpathy_retrieval_eval(Dataset):
