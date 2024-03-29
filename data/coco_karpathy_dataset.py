@@ -10,10 +10,10 @@ from PIL import Image
 from data.utils import pre_caption
 
 class coco_karpathy_train(Dataset):
-    def __init__(self, transform, image_root, ann_root, max_words=30, prompt=''):        
+    def __init__(self, transform, image_root, df_root, max_words=30, prompt=''):        
         
         self.transform = transform
-        self.df = pd.read_csv(ann_root)
+        self.df = pd.read_csv(df_root)
         self.image_root = image_root
         self.max_words = max_words
         self.prompt = prompt
