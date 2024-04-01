@@ -7,7 +7,8 @@
 '''
 import argparse
 import os
-import ruamel_yaml as yaml
+# import ruamel_yaml as yaml
+import yaml
 import numpy as np
 import random
 import time
@@ -68,8 +69,8 @@ def evaluate(model, data_loader, device, config):
     result = []
     for image, image_id in metric_logger.log_every(data_loader, print_freq, header): 
         
-        image = image.to(device)       
-        
+        image = image.to(device)  
+
         captions = model.generate(image, sample=False, num_beams=config['num_beams'], max_length=config['max_length'], 
                                   min_length=config['min_length'])
         
@@ -93,18 +94,22 @@ def main(args, config):
 
     #### Dataset #### 
     print("Creating captioning dataset")
-    train_dataset, val_dataset, test_dataset = create_dataset('caption_coco', config)  
+    train_dataset, val_dataset, test_dataset, coco_val_dataset, coco_test_dataset = create_dataset('caption_coco', config)  
 
     if args.distributed:
         num_tasks = utils.get_world_size()
-        global_rank = utils.get_rank()
+        global_rank = utils.get_rank()            
         samplers = create_sampler([train_dataset,val_dataset,test_dataset], [True,False,False], num_tasks, global_rank)         
     else:
         samplers = [None, None, None]
     
+    _, COCO_val_loader, COCO_test_loader = create_loader([train_dataset, coco_val_dataset, coco_test_dataset],samplers,
+                                                batch_size=[config['batch_size']]*3,num_workers=[config['num_workers'],config['num_workers'],config['num_workers']],
+                                                is_trains=[True, False, False], collate_fns=[None,None,None])
+
     train_loader, val_loader, test_loader = create_loader([train_dataset, val_dataset, test_dataset],samplers,
-                                                          batch_size=[config['batch_size']]*3,num_workers=[4,4,4],
-                                                          is_trains=[True, False, False], collate_fns=[None,None,None])         
+                                                          batch_size=[config['batch_size']]*3,num_workers=[config['num_workers'],config['num_workers'],config['num_workers']],
+                                                          is_trains=[True, False, False], collate_fns=[None,None,None])      
 
     #### Model #### 
     print("Creating model")
@@ -119,7 +124,7 @@ def main(args, config):
         model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu])
         model_without_ddp = model.module    
     
-    optimizer = torch.optim.AdamW(params=model.parameters(), lr=config['init_lr'], weight_decay=config['weight_decay'])
+    optimizer = torch.optim.AdamW(params=model.parameters(), lr=float(config['init_lr']), weight_decay=config['weight_decay'])
             
     best = 0
     best_epoch = 0
@@ -131,17 +136,26 @@ def main(args, config):
             if args.distributed:
                 train_loader.sampler.set_epoch(epoch)
                 
-            cosine_lr_schedule(optimizer, epoch, config['max_epoch'], config['init_lr'], config['min_lr'])
+            cosine_lr_schedule(optimizer, epoch, config['max_epoch'], float(config['init_lr']), config['min_lr'])
                 
             train_stats = train(model, train_loader, optimizer, epoch, device) 
         
+        os.makedirs(os.path.join(args.result_dir, 'csv'), exist_ok=True)
         val_result = evaluate(model_without_ddp, val_loader, device, config)  
-        val_result_file = save_result(val_result, args.result_dir, 'val_epoch%d'%epoch, remove_duplicate='image_id')        
+        val_result_file = save_result(val_result, os.path.join(args.result_dir, 'csv'), 'val_epoch%d'%epoch, remove_duplicate='image_id')        
   
         test_result = evaluate(model_without_ddp, test_loader, device, config)  
-        test_result_file = save_result(test_result, args.result_dir, 'test_epoch%d'%epoch, remove_duplicate='image_id')  
+        test_result_file = save_result(test_result, os.path.join(args.result_dir, 'csv'), 'test_epoch%d'%epoch, remove_duplicate='image_id')  
 
-        if utils.is_main_process():   
+        os.makedirs(os.path.join(args.result_dir, 'coco'), exist_ok=True)
+        COCO_val_result = evaluate(model_without_ddp, COCO_val_loader, device, config)  
+        COCO_val_result_file = save_result(COCO_val_result, os.path.join(args.result_dir, 'coco'), 'val_epoch%d'%epoch, remove_duplicate='image_id')        
+  
+        COCO_test_result = evaluate(model_without_ddp, COCO_test_loader, device, config)  
+        COCO_test_result_file = save_result(COCO_test_result, os.path.join(args.result_dir, 'coco'), 'test_epoch%d'%epoch, remove_duplicate='image_id')  
+
+
+        if utils.is_main_process():
             coco_val = coyo_caption_eval('annotation/coyo_val.json',val_result_file,'val')
             coco_test = coyo_caption_eval('annotation/coyo_val.json',test_result_file,'test')
             
@@ -162,7 +176,7 @@ def main(args, config):
                 if coco_val.eval['CIDEr'] + coco_val.eval['Bleu_4'] > best:
                     best = coco_val.eval['CIDEr'] + coco_val.eval['Bleu_4']
                     best_epoch = epoch                
-                    torch.save(save_obj, os.path.join(args.output_dir, 'checkpoint_best.pth')) 
+                    torch.save(save_obj, os.path.join(args.output_dir, 'coyo_checkpoint_best.pth')) 
                     
                 log_stats = {**{f'train_{k}': v for k, v in train_stats.items()},
                              **{f'val_{k}': v for k, v in coco_val.eval.items()},
@@ -173,8 +187,8 @@ def main(args, config):
                 with open(os.path.join(args.output_dir, "coyo_log.txt"),"a") as f:
                     f.write(json.dumps(log_stats) + "\n")     
 
-            coco_val = coco_caption_eval(config['coco_gt_root'],val_result_file,'val')
-            coco_test = coco_caption_eval(config['coco_gt_root'],test_result_file,'test')
+            coco_val = coco_caption_eval(config['coco_gt_root'],COCO_val_result_file,'val')
+            coco_test = coco_caption_eval(config['coco_gt_root'],COCO_test_result_file,'test')
 
             if args.evaluate:            
                 log_stats = {**{f'val_{k}': v for k, v in coco_val.eval.items()},
@@ -193,7 +207,7 @@ def main(args, config):
                 if coco_val.eval['CIDEr'] + coco_val.eval['Bleu_4'] > best:
                     best = coco_val.eval['CIDEr'] + coco_val.eval['Bleu_4']
                     best_epoch = epoch                
-                    torch.save(save_obj, os.path.join(args.output_dir, 'checkpoint_best.pth')) 
+                    torch.save(save_obj, os.path.join(args.output_dir, 'coco_checkpoint_best.pth')) 
                     
                 log_stats = {**{f'train_{k}': v for k, v in train_stats.items()},
                              **{f'val_{k}': v for k, v in coco_val.eval.items()},
