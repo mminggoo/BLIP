@@ -26,7 +26,8 @@ class coco_karpathy_train(Dataset):
     def __init__(self, transform, image_root, df_root, max_words=30, prompt=''):        
         
         self.transform = transform
-        self.df = pd.read_csv(df_root).iloc[:40]
+        self.df = pd.read_csv(df_root)
+        self.df = pd.read_csv(df_root).iloc[:int(len(self.df)*0.9)]
         self.image_root = image_root
         self.max_words = max_words
         self.prompt = prompt
@@ -51,7 +52,8 @@ class coco_karpathy_train(Dataset):
 class coco_karpathy_caption_eval(Dataset):
     def __init__(self, transform, image_root, df_root, split):
         
-        self.df = pd.read_csv(df_root).iloc[:20]
+        self.df = pd.read_csv(df_root)
+        self.df = pd.read_csv(df_root).iloc[int(len(self.df)*0.9):]
         self.transform = transform
         self.image_root = image_root
         csv2anno(self.df, self.image_root, file_path='annotation/coyo_val.json')
@@ -65,7 +67,7 @@ class coco_karpathy_caption_eval(Dataset):
         
         image_path = os.path.join(self.image_root, ann['image_file'])         
         image = Image.open(image_path).convert('RGB')
-        image = self.transform(image)          
+        image = self.transform(image)
         
         return image, index  
     
