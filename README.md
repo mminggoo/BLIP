@@ -1,3 +1,13 @@
+```
+python train_caption.py
+cd ..
+cd MasaCtrl/
+python eval_masa_w_captioning_hugging.py
+python eval_masa2.py
+cd ..
+```
+
+
 ## BLIP: Bootstrapping Language-Image Pre-training for Unified Vision-Language Understanding and Generation
 
 ## Announcement: BLIP is now officially integrated into [LAVIS](https://github.com/salesforce/LAVIS) - a one-stop library for language-and-vision research and applications!
