@@ -8,8 +8,14 @@ cd ..
 ```
 
 ```
-python eval_hugging_rival.py
-python eval_masa2_rival.py
+python eval_masa_w_2_captioning_template.py
+python eval_masa_w_3_summarize.py
+python eval_masa_w_4_interpolate.py
+python eval_masa.py
+python 2eval_masa_w_1_captioning.py
+python 2eval_masa_w_2_captioning_template.py
+python 2eval_masa_w_3_summarize.py
+python 2eval_masa_w_4_interpolate.py
 cd ..
 ```
 
