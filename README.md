@@ -20,6 +20,8 @@ python eval_masa_w_1_captioning.py
 python eval_masa_w_2_captioning_template.py
 python eval_masa_w_3_summarize.py
 python eval_masa_w_4_interpolate.py
+cd ..
+
 python eval_masa.py
 python 2eval_masa_w_1_captioning.py
 python 2eval_masa_w_2_captioning_template.py
