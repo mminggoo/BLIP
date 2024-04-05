@@ -32,6 +32,9 @@ cd ..
 python blip2_interpolate-opt-2.7b0.6.py
 python blip2_interpolate-opt-2.7b0.7.py
 python blip2_interpolate-opt-2.7b0.8.py
+python blip2_interpolate-opt-2.7b0.6qa.py
+python blip2_interpolate-opt-2.7b0.7qa.py
+python blip2_interpolate-opt-2.7b0.8qa.py
 cd ..
 
 ```
