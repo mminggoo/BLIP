@@ -37,6 +37,12 @@ python blip2_interpolate-opt-2.7b0.7qa.py
 python blip2_interpolate-opt-2.7b0.8qa.py
 cd ..
 
+python blip2_interpolate0.7.py
+python blip2_interpolate0.8.py
+python blip2_interpolate0.6qa.py
+python blip2_interpolate0.7qa.py
+python blip2_interpolate0.8qa.py
+cd ..
 ```
 
 ## BLIP: Bootstrapping Language-Image Pre-training for Unified Vision-Language Understanding and Generation
