@@ -35,6 +35,12 @@ python blip2_interpolate-opt-2.7b0.8.py
 python blip2_interpolate-opt-2.7b0.6qa.py
 python blip2_interpolate-opt-2.7b0.7qa.py
 python blip2_interpolate-opt-2.7b0.8qa.py
+python blip2_interpolate-opt-2.7b0.6masa3.py
+python blip2_interpolate-opt-2.7b0.7masa3.py
+python blip2_interpolate-opt-2.7b0.8masa3.py
+python blip2_interpolate-opt-2.7b0.6qamasa3.py
+python blip2_interpolate-opt-2.7b0.7qamasa3.py
+python blip2_interpolate-opt-2.7b0.8qamasa3.py
 cd ..
 
 python blip2_interpolate0.7.py
@@ -42,6 +48,12 @@ python blip2_interpolate0.8.py
 python blip2_interpolate0.6qa.py
 python blip2_interpolate0.7qa.py
 python blip2_interpolate0.8qa.py
+python blip2_interpolate0.6masa3.py
+python blip2_interpolate0.7masa3.py
+python blip2_interpolate0.8masa3.py
+python blip2_interpolate0.6qamasa3.py
+python blip2_interpolate0.7qamasa3.py
+python blip2_interpolate0.8qamasa3.py
 cd ..
 ```
 
