@@ -28,6 +28,12 @@ python 2eval_masa_w_2_captioning_template.py
 python 2eval_masa_w_3_summarize.py
 python 2eval_masa_w_4_interpolate.py
 cd ..
+
+python blip2_interpolate-opt-2.7b0.6.py
+python blip2_interpolate-opt-2.7b0.7.py
+python blip2_interpolate-opt-2.7b0.8.py
+cd ..
+
 ```
 
 ## BLIP: Bootstrapping Language-Image Pre-training for Unified Vision-Language Understanding and Generation
