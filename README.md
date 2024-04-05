@@ -55,6 +55,14 @@ python blip2_interpolate0.6qamasa3.py
 python blip2_interpolate0.7qamasa3.py
 python blip2_interpolate0.8qamasa3.py
 cd ..
+
+python blip2_interpolate0.6backis.py
+python blip2_interpolate0.7backis.py
+python blip2_interpolate0.8backis.py
+python blip2_interpolate0.6masa3backis.py
+python blip2_interpolate0.7masa3backis.py
+python blip2_interpolate0.8masa3backis.py
+cd ..
 ```
 
 ## BLIP: Bootstrapping Language-Image Pre-training for Unified Vision-Language Understanding and Generation
