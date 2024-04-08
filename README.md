@@ -8,6 +8,10 @@ cd ..
 ```
 
 ```
+python eval_masa_w_4_interpolate7.py
+python visual_total.py
+cd .. 
+
 python eval_masa_w_4_interpolate.py
 python blip2_eval_masa_w_1_captioning.py
 python blip2_eval_masa_w_2_captioning_template.py
@@ -20,10 +24,6 @@ python eval_masa_w_1_captioning.py
 python eval_masa_w_2_captioning_template.py
 python eval_masa_w_3_summarize.py
 python eval_masa_w_4_interpolate.py
-cd ..
-
-python eval_masa_w_4_interpolate6.py
-python eval_masa_w_4_interpolate7.py
 cd ..
 
 python eval_masa.py
