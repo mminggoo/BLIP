@@ -8,6 +8,12 @@ cd ..
 ```
 
 ```
+python eval_masa_w_4_interpolate7.py
+python visual_total.py
+python visual_total2.py
+python visual_total3.py
+cd ..
+
 python eval_masa_w_4_interpolate.py
 python blip2_eval_masa_w_1_captioning.py
 python blip2_eval_masa_w_2_captioning_template.py
