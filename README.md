@@ -22,8 +22,8 @@ python eval_masa_w_3_summarize.py
 python eval_masa_w_4_interpolate.py
 cd ..
 
-python eval_masa_w_4_interpolate4.py
-python eval_masa_w_4_interpolate5.py
+python eval_masa_w_4_interpolate6.py
+python eval_masa_w_4_interpolate7.py
 cd ..
 
 python eval_masa.py
